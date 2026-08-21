@@ -7,6 +7,7 @@
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; background: #efe4d3; color: var(--ink); display: flex; flex-direction: column; }
+[hidden] { display: none !important; }
 button, input { font: inherit; }
 .chrome {
   background: rgba(255, 250, 243, 0.95);

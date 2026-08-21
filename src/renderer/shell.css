@@ -15,6 +15,7 @@
 
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; background: var(--desk); color: var(--ink); }
+[hidden] { display: none !important; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
 
