@@ -13,8 +13,32 @@ const wv = document.createElement('webview');
 wv.setAttribute('partition', partition);
 wv.setAttribute('allowpopups', 'on');
 wv.setAttribute('webpreferences', 'contextIsolation=yes, nodeIntegration=no, sandbox=yes');
-wv.src = startUrl;
+
+function whenWebviewReady(guest) {
+  if (guest._shelfReady) return Promise.resolve(guest);
+  return new Promise((resolve) => {
+    guest.addEventListener('dom-ready', () => {
+      guest._shelfReady = true;
+      resolve(guest);
+    }, { once: true });
+  });
+}
+
+function withReadyWebview(fn) {
+  whenWebviewReady(wv).then((ready) => {
+    try {
+      fn(ready);
+    } catch {
+      // guest not attached
+    }
+  });
+}
+
 host.append(wv);
+wv.setAttribute('src', 'about:blank');
+whenWebviewReady(wv).then((ready) => {
+  if (startUrl && startUrl !== 'about:blank') ready.loadURL(startUrl);
+});
 
 const addr = document.getElementById('addr');
 const urlInput = document.getElementById('url-input');
@@ -39,18 +63,27 @@ document.getElementById('btn-collapse').addEventListener('click', () => {
 document.getElementById('btn-home').addEventListener('click', () => window.appChrome.home());
 document.getElementById('btn-fullscreen').addEventListener('click', () => window.appChrome.toggleFullscreen());
 document.getElementById('nav-back').addEventListener('click', () => {
-  if (wv.canGoBack()) wv.goBack();
+  withReadyWebview((ready) => {
+    if (ready.canGoBack()) ready.goBack();
+  });
 });
 document.getElementById('nav-forward').addEventListener('click', () => {
-  if (wv.canGoForward()) wv.goForward();
+  withReadyWebview((ready) => {
+    if (ready.canGoForward()) ready.goForward();
+  });
 });
-document.getElementById('nav-reload').addEventListener('click', () => wv.reload());
+document.getElementById('nav-reload').addEventListener('click', () => {
+  withReadyWebview((ready) => ready.reload());
+});
 document.getElementById('url-form').addEventListener('submit', (e) => {
   e.preventDefault();
   const url = normalizeUrl(urlInput.value);
-  if (url) wv.loadURL(url);
+  if (url) withReadyWebview((ready) => ready.loadURL(url));
 });
 
+wv.addEventListener('dom-ready', () => {
+  wv._shelfReady = true;
+});
 wv.addEventListener('page-title-updated', (e) => {
   document.getElementById('app-title').textContent = e.title || title;
   document.title = e.title || title;

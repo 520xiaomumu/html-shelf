@@ -383,12 +383,40 @@ function currentWebview() {
   return tab ? tab.webview : null;
 }
 
+function isWebviewReady(wv) {
+  return Boolean(wv && wv._shelfReady);
+}
+
+function whenWebviewReady(wv) {
+  if (!wv) return Promise.resolve(null);
+  if (wv._shelfReady) return Promise.resolve(wv);
+  return new Promise((resolve) => {
+    const done = () => {
+      wv._shelfReady = true;
+      resolve(wv);
+    };
+    wv.addEventListener('dom-ready', done, { once: true });
+  });
+}
+
+function withReadyWebview(wv, fn) {
+  whenWebviewReady(wv).then((ready) => {
+    if (!ready) return;
+    try {
+      fn(ready);
+    } catch {
+      // guest not attached
+    }
+  });
+}
+
 function updateNavButtons() {
   const wv = currentWebview();
-  $('nav-back').disabled = !(wv && wv.canGoBack && wv.canGoBack());
-  $('nav-forward').disabled = !(wv && wv.canGoForward && wv.canGoForward());
+  const ready = isWebviewReady(wv);
+  $('nav-back').disabled = !(ready && wv.canGoBack());
+  $('nav-forward').disabled = !(ready && wv.canGoForward());
   $('zoom-label').textContent = `${Math.round(zoom * 100)}%`;
-  if (wv && wv.getURL) {
+  if (ready) {
     try {
       const url = wv.getURL();
       if (url && url !== 'about:blank') $('url-input').value = url;
@@ -430,11 +458,7 @@ function activateTab(id) {
   if (tab) {
     $('url-input').value = tab.url || '';
     zoom = tab.zoom || 1;
-    try {
-      tab.webview.setZoomFactor(zoom);
-    } catch {
-      // ignore
-    }
+    withReadyWebview(tab.webview, (wv) => wv.setZoomFactor(zoom));
   }
   renderTabs();
   updateNavButtons();
@@ -455,13 +479,11 @@ function closeTab(id) {
 
 function openTab({ url, partition, title, itemId }) {
   const id = `tab-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const href = url || 'about:blank';
   const wv = document.createElement('webview');
   wv.setAttribute('partition', partition || 'persist:browser');
   wv.setAttribute('allowpopups', 'on');
   wv.setAttribute('webpreferences', 'contextIsolation=yes, nodeIntegration=no, sandbox=yes');
-  const href = url || 'about:blank';
-  wv.src = href;
-  $('webview-host').append(wv);
   const tab = { id, title: title || href, url: href, partition, itemId, webview: wv, zoom: 1 };
   tabs.push(tab);
   wv.addEventListener('page-title-updated', (e) => {
@@ -487,8 +509,19 @@ function openTab({ url, partition, title, itemId }) {
     $('browser-error').hidden = true;
     updateNavButtons();
   });
+  wv.addEventListener('dom-ready', () => {
+    wv._shelfReady = true;
+    updateNavButtons();
+  });
+  $('webview-host').append(wv);
   showView('browser');
   activateTab(id);
+  wv.setAttribute('src', 'about:blank');
+  whenWebviewReady(wv).then((ready) => {
+    if (!ready) return;
+    if (href && href !== 'about:blank') ready.loadURL(href);
+    ready.setZoomFactor(tab.zoom || 1);
+  });
 }
 
 async function askUrlAndOpen() {
@@ -652,16 +685,17 @@ function bindUi() {
 
   $('nav-home').addEventListener('click', goHome);
   $('nav-back').addEventListener('click', () => {
-    const wv = currentWebview();
-    if (wv && wv.canGoBack()) wv.goBack();
+    withReadyWebview(currentWebview(), (wv) => {
+      if (wv.canGoBack()) wv.goBack();
+    });
   });
   $('nav-forward').addEventListener('click', () => {
-    const wv = currentWebview();
-    if (wv && wv.canGoForward()) wv.goForward();
+    withReadyWebview(currentWebview(), (wv) => {
+      if (wv.canGoForward()) wv.goForward();
+    });
   });
   $('nav-reload').addEventListener('click', () => {
-    const wv = currentWebview();
-    if (wv) wv.reload();
+    withReadyWebview(currentWebview(), (wv) => wv.reload());
   });
   $('url-form').addEventListener('submit', (e) => {
     e.preventDefault();
@@ -669,7 +703,7 @@ function bindUi() {
     if (!url) return;
     const wv = currentWebview();
     if (wv) {
-      wv.loadURL(url);
+      withReadyWebview(wv, (ready) => ready.loadURL(url));
     } else {
       openTab({ url, partition: 'persist:browser', title: url });
     }
@@ -744,20 +778,21 @@ function bindUi() {
     }
     if (meta && e.key.toLowerCase() === 'r' && view === 'browser') {
       e.preventDefault();
-      const wv = currentWebview();
-      if (wv) wv.reload();
+      withReadyWebview(currentWebview(), (wv) => wv.reload());
     }
     if (e.key === 'F11') {
       e.preventDefault();
       window.shelf.toggleFullscreen();
     }
     if (e.altKey && e.key === 'ArrowLeft' && view === 'browser') {
-      const wv = currentWebview();
-      if (wv && wv.canGoBack()) wv.goBack();
+      withReadyWebview(currentWebview(), (wv) => {
+        if (wv.canGoBack()) wv.goBack();
+      });
     }
     if (e.altKey && e.key === 'ArrowRight' && view === 'browser') {
-      const wv = currentWebview();
-      if (wv && wv.canGoForward()) wv.goForward();
+      withReadyWebview(currentWebview(), (wv) => {
+        if (wv.canGoForward()) wv.goForward();
+      });
     }
     if (e.key === 'Escape' && !$('modal').hidden) closeModal();
   });
@@ -768,15 +803,8 @@ function bindUi() {
 function setZoom(next) {
   zoom = Math.min(3, Math.max(0.3, Math.round(next * 10) / 10));
   const tab = tabs.find((t) => t.id === activeTabId);
-  const wv = currentWebview();
   if (tab) tab.zoom = zoom;
-  if (wv) {
-    try {
-      wv.setZoomFactor(zoom);
-    } catch {
-      // ignore
-    }
-  }
+  withReadyWebview(currentWebview(), (wv) => wv.setZoomFactor(zoom));
   updateNavButtons();
 }
 
