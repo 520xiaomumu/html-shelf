@@ -45,16 +45,30 @@ function hardenSession(ses) {
       cb({ cancel: true });
     });
   }
-  ses.setWindowOpenHandler(({ url }) => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('ui:open-tab', {
-        url,
-        partition: BROWSER_PARTITION,
-        title: url,
-      });
-      mainWindow.show();
-    }
-    return { action: 'deny' };
+}
+
+function denyPopupAndOpenAsTab({ url }) {
+  if (url && mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('ui:open-tab', {
+      url,
+      partition: BROWSER_PARTITION,
+      title: url,
+    });
+    mainWindow.show();
+  }
+  return { action: 'deny' };
+}
+
+function attachWindowOpenHandler(webContents) {
+  if (!webContents || webContents.isDestroyed() || webContents._htmlshelfWindowOpen) return;
+  webContents._htmlshelfWindowOpen = true;
+  webContents.setWindowOpenHandler(denyPopupAndOpenAsTab);
+}
+
+function attachWindowOpenHandlers(win) {
+  attachWindowOpenHandler(win.webContents);
+  win.on('did-attach-webview', (_event, guestContents) => {
+    attachWindowOpenHandler(guestContents);
   });
 }
 
@@ -78,6 +92,7 @@ function createMainWindow() {
     },
   });
   win.once('ready-to-show', () => win.show());
+  attachWindowOpenHandlers(win);
   win.loadFile(path.join(__dirname, '../renderer/shell.html'));
   win.on('closed', () => {
     if (mainWindow === win) mainWindow = null;
@@ -110,6 +125,7 @@ function createAppWindow(item) {
     },
   });
   win.once('ready-to-show', () => win.show());
+  attachWindowOpenHandlers(win);
   win.loadFile(path.join(__dirname, '../renderer/app-chrome.html'), {
     query: {
       itemId: item.id,
@@ -472,6 +488,10 @@ function buildMenu() {
   ];
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
+
+app.on('web-contents-created', (_event, contents) => {
+  attachWindowOpenHandler(contents);
+});
 
 app.whenReady().then(async () => {
   store = new LibraryStore(userDataPath('library.json'));
