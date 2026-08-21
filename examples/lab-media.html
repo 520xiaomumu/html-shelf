@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang=\"zh-CN\">
+<head>
+  <meta charset=\"utf-8\">
+  <title>媒体实验</title>
+  <link rel=\"stylesheet\" href=\"common.css\">
+</head>
+<body>
+  <main>
+    <span class=\"tag\">实验</span>
+    <h1>媒体实验</h1>
+    <p>申请本机摄像头/麦克风预览。无设备或拒绝授权时必须给出明确失败提示，不能白屏。</p>
+    <video id=\"preview\" autoplay playsinline muted style=\"width:100%;max-height:240px;background:#1c1410;border-radius:8px\"></video>
+    <p><button id=\"ask\" type=\"button\">申请摄像头和麦克风</button></p>
+    <p class=\"status\" id=\"msg\">尚未申请。点按钮后应出现系统权限提示或失败原因。</p>
+  </main>
+  <script src=\"lab-media.js\"></script>
+</body>
+</html>

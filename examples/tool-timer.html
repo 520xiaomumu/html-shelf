@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>计时便签</title>
+  <link rel="stylesheet" href="common.css">
+</head>
+<body>
+  <main>
+    <span class="tag">工具</span>
+    <h1>计时便签</h1>
+    <p>本地秒表 + 一则便签。用来演示页架扫库、分类和相对 CSS。</p>
+    <p>已过 <strong id="sec">0</strong> 秒</p>
+    <button id="toggle" type="button">暂停</button>
+    <button id="reset" type="button">清零</button>
+    <p><textarea id="note" rows="5" style="width:100%;margin-top:12px" placeholder="写点备忘…"></textarea></p>
+  </main>
+  <script src="tool-timer.js"></script>
+</body>
+</html>
