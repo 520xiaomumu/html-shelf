@@ -14,13 +14,24 @@
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; height: 100%; background: var(--desk); color: var(--ink); }
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--desk);
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+}
 [hidden] { display: none !important; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
 
 #app {
+  flex: 1;
+  min-height: 0;
   height: 100%;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   background:
@@ -107,8 +118,8 @@ button { cursor: pointer; }
 }
 .menu button:hover { background: #f0e6d6; }
 
-.workspace { flex: 1; min-height: 0; position: relative; }
-.view { height: 100%; }
+.workspace { flex: 1; min-height: 0; overflow: hidden; position: relative; }
+.view { height: 100%; min-height: 0; }
 
 .library-view { display: flex; min-height: 0; }
 .sidebar {
@@ -188,7 +199,9 @@ button { cursor: pointer; }
 .browser-view {
   display: flex;
   flex-direction: column;
+  height: 100%;
   min-height: 0;
+  overflow: hidden;
   background: #efe4d3;
 }
 .tab-strip {
@@ -218,15 +231,22 @@ button { cursor: pointer; }
   background: #f8d7d0;
   color: #6a2218;
 }
-.webview-host { flex: 1; min-height: 0; position: relative; background: #efe4d3; }
+.webview-host {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  background: #efe4d3;
+}
 .webview-host webview {
+  display: none;
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  display: none;
 }
-.webview-host webview.active { display: flex; }
+.webview-host webview.active { display: inline-flex; }
 
 .settings-view { overflow: auto; padding: 20px 28px 40px; background: rgba(255, 250, 243, 0.88); }
 .settings-nav { display: flex; gap: 8px; margin-bottom: 16px; }
