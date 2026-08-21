@@ -10,16 +10,16 @@
   <header class="chrome">
     <div class="title-row">
       <strong id="app-title">应用</strong>
-      <button type="button" class="btn" id="btn-toggle">展开地址栏</button>
+      <button type="button" class="btn" id="btn-toggle" hidden>展开地址栏</button>
       <button type="button" class="btn" id="btn-home">主页</button>
       <button type="button" class="btn" id="btn-fullscreen">全屏</button>
     </div>
-    <div id="addr" class="addr" hidden>
+    <div id="addr" class="addr">
       <button type="button" class="icon" id="nav-back">←</button>
       <button type="button" class="icon" id="nav-forward">→</button>
       <button type="button" class="icon" id="nav-reload">↻</button>
       <form id="url-form">
-        <input id="url-input" type="text" spellcheck="false">
+        <input id="url-input" type="text" placeholder="输入网址，回车打开" spellcheck="false">
       </form>
       <button type="button" class="btn" id="btn-collapse">收起</button>
     </div>

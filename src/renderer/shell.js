@@ -483,7 +483,10 @@ function openTab({ url, partition, title, itemId }) {
   const wv = document.createElement('webview');
   wv.setAttribute('partition', partition || 'persist:browser');
   wv.setAttribute('allowpopups', 'on');
+  wv.setAttribute('autosize', 'on');
   wv.setAttribute('webpreferences', 'contextIsolation=yes, nodeIntegration=no, sandbox=yes');
+  wv.style.width = '100%';
+  wv.style.height = '100%';
   const tab = { id, title: title || href, url: href, partition, itemId, webview: wv, zoom: 1 };
   tabs.push(tab);
   wv.addEventListener('page-title-updated', (e) => {
