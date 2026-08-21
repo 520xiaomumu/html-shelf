@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' shelfmedia: data:; style-src 'self'; script-src 'self'; media-src 'self' blob:; frame-src htmlshelf: http: https: data: about:">
+  <title>页架</title>
+  <link rel="stylesheet" href="shell.css">
+</head>
+<body>
+  <div id="app">
+    <header class="topbar" id="topbar-library">
+      <button type="button" class="brand" id="btn-brand" title="回到应用库">页架</button>
+      <input id="search" type="search" placeholder="搜索标题、标签或路径…" autocomplete="off">
+      <select id="sort" aria-label="排序">
+        <option value="lastOpened">最近打开</option>
+        <option value="name">名称</option>
+      </select>
+      <div class="add-wrap">
+        <button type="button" class="btn primary" id="btn-add">添加 ▾</button>
+        <div class="menu" id="add-menu" hidden>
+          <button type="button" data-add="file">添加文件…</button>
+          <button type="button" data-add="folder">添加文件夹…</button>
+          <button type="button" data-add="url">添加网址到库…</button>
+          <button type="button" data-add="opentab">新标签打开网址…</button>
+        </div>
+      </div>
+      <button type="button" class="btn" id="btn-settings">设置</button>
+    </header>
+
+    <header class="topbar browser-bar" id="topbar-browser" hidden>
+      <button type="button" class="icon-btn" id="nav-back" title="后退">←</button>
+      <button type="button" class="icon-btn" id="nav-forward" title="前进">→</button>
+      <button type="button" class="icon-btn" id="nav-reload" title="刷新">↻</button>
+      <button type="button" class="icon-btn" id="nav-home" title="主页（回库）">⌂</button>
+      <form id="url-form" class="url-form">
+        <input id="url-input" type="text" placeholder="输入网址，回车打开" spellcheck="false">
+      </form>
+      <button type="button" class="btn" id="nav-zoom-out" title="缩小">−</button>
+      <span id="zoom-label" class="zoom-label">100%</span>
+      <button type="button" class="btn" id="nav-zoom-in" title="放大">+</button>
+      <button type="button" class="btn" id="nav-newtab" title="新标签">新标签</button>
+      <button type="button" class="btn" id="nav-fullscreen" title="窗口全屏">全屏</button>
+      <button type="button" class="btn" id="btn-settings-2">设置</button>
+    </header>
+
+    <header class="topbar" id="topbar-settings" hidden>
+      <button type="button" class="brand" id="btn-settings-home">页架</button>
+      <h1 class="page-title">设置</h1>
+      <button type="button" class="btn" id="btn-settings-back">返回库</button>
+    </header>
+
+    <div class="workspace">
+      <section id="view-library" class="view library-view">
+        <aside class="sidebar">
+          <h2>分类</h2>
+          <nav id="category-list" class="category-list"></nav>
+          <button type="button" class="btn ghost wide" id="btn-new-category">＋ 新分类</button>
+        </aside>
+        <main class="grid-wrap">
+          <p class="hint" id="library-hint">把 HTML 文件或文件夹拖到这里，或用右上角「添加」。单击卡片即可打开。</p>
+          <div id="card-grid" class="card-grid"></div>
+        </main>
+      </section>
+
+      <section id="view-browser" class="view browser-view" hidden>
+        <div id="tab-strip" class="tab-strip"></div>
+        <p id="browser-error" class="browser-error" hidden></p>
+        <div id="webview-host" class="webview-host"></div>
+      </section>
+
+      <section id="view-settings" class="view settings-view" hidden>
+        <nav class="settings-nav">
+          <button type="button" class="settings-tab active" data-panel="extensions">扩展</button>
+          <button type="button" class="settings-tab" data-panel="permissions">权限</button>
+          <button type="button" class="settings-tab" data-panel="library">库文件位置</button>
+        </nav>
+        <div id="panel-extensions" class="settings-panel">
+          <p class="hint">v1 只从本机加载 unpacked 目录或导入 .crx。Chrome 网上应用店一键安装属于 v2，这里不会假装已支持。</p>
+          <p>
+            <button type="button" class="btn primary" id="btn-load-unpacked">加载 unpacked 目录…</button>
+            <button type="button" class="btn" id="btn-import-crx">导入 .crx…</button>
+          </p>
+          <p id="ext-status" class="status" hidden></p>
+          <table class="table">
+            <thead>
+              <tr><th>名称</th><th>来源</th><th>状态</th><th></th></tr>
+            </thead>
+            <tbody id="ext-body"></tbody>
+          </table>
+        </div>
+        <div id="panel-permissions" class="settings-panel" hidden>
+          <p class="hint">媒体权限（摄像头/麦克风）按来源记住。无设备时页面应显示失败原因，而不是白屏。不自研通话信令。</p>
+          <table class="table">
+            <thead>
+              <tr><th>来源</th><th>摄像头/麦克风</th><th></th></tr>
+            </thead>
+            <tbody id="perm-body"></tbody>
+          </table>
+        </div>
+        <div id="panel-library" class="settings-panel" hidden>
+          <p class="hint">库索引只写在 Electron userData，刷新或重启后仍在。不上传、不进 git。</p>
+          <dl class="defs">
+            <dt>用户数据目录</dt>
+            <dd id="path-userdata"></dd>
+            <dt>库 JSON</dt>
+            <dd id="path-library"></dd>
+          </dl>
+          <button type="button" class="btn" id="btn-open-userdata">打开所在文件夹</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div id="drop-mask" class="drop-mask" hidden>松开以加入库（文件或文件夹）</div>
+
+  <div id="modal" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true">
+      <h2 id="modal-title">编辑</h2>
+      <div id="modal-body"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="modal-cancel">取消</button>
+        <button type="button" class="btn primary" id="modal-ok">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="shell.js"></script>
+</body>
+</html>

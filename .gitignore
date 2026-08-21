@@ -4,3 +4,5 @@ out
 .env
 user-data
 *.log
+library.json
+*.tmp

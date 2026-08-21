@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; frame-src htmlshelf: http: https: data: about:">
+  <title>页架应用</title>
+  <link rel="stylesheet" href="app-chrome.css">
+</head>
+<body>
+  <header class="chrome">
+    <div class="title-row">
+      <strong id="app-title">应用</strong>
+      <button type="button" class="btn" id="btn-toggle" hidden>展开地址栏</button>
+      <button type="button" class="btn" id="btn-home">主页</button>
+      <button type="button" class="btn" id="btn-fullscreen">全屏</button>
+    </div>
+    <div id="addr" class="addr">
+      <button type="button" class="icon" id="nav-back">←</button>
+      <button type="button" class="icon" id="nav-forward">→</button>
+      <button type="button" class="icon" id="nav-reload">↻</button>
+      <form id="url-form">
+        <input id="url-input" type="text" placeholder="输入网址，回车打开" spellcheck="false">
+      </form>
+      <button type="button" class="btn" id="btn-collapse">收起</button>
+    </div>
+  </header>
+  <p id="fail" class="fail" hidden></p>
+  <div id="host" class="host"></div>
+  <script src="app-chrome.js"></script>
+</body>
+</html>

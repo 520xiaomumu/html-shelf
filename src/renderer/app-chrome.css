@@ -1,0 +1,63 @@
+:root {
+  --ink: #3b2f2a;
+  --paper: #fffaf3;
+  --line: #d9cbb8;
+  --accent: #6b4f3a;
+  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #efe4d3;
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+}
+[hidden] { display: none !important; }
+button, input { font: inherit; }
+.chrome {
+  flex: 0 0 auto;
+  background: rgba(255, 250, 243, 0.95);
+  border-bottom: 1px solid var(--line);
+}
+.title-row, .addr {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+}
+#app-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.btn, .icon {
+  border: 1px solid var(--line);
+  background: var(--paper);
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+.icon { width: 34px; }
+#url-form { flex: 1; display: flex; }
+#url-input {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 10px;
+  background: #fff;
+}
+.host {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  background: #efe4d3;
+}
+.host webview {
+  display: inline-flex;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.fail { margin: 0; padding: 8px 12px; background: #f8d7d0; color: #6a2218; }
